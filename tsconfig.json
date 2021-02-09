@@ -1,0 +1,22 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "esnext",
+		"lib": ["esnext", "dom", "dom.iterable"],
+		"rootDir": "src",
+		"outDir": "out",
+		"declaration": true,
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noImplicitReturns": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitAny": true,
+		"noImplicitThis": true
+	},
+	"exclude": [
+		"node_modules",
+		"out",
+		"test"
+	]
+}
