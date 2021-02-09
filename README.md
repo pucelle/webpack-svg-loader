@@ -1,13 +1,27 @@
-# Webpack loader for webgl shaders in typescript language
+# Webpack loader for loading svg files in typescript language
+
 
 
 ## How to use?
 
-#### Import shader text in you typescript file:
+
+
+#### Reference svg file type
 
 ```ts
-import shaderText from 'shaderFilePath.glsl'
+///<reference types="@pucelle/webpack-svg-loader" />
 ```
+
+
+
+#### Import svg text in you typescript file
+
+```ts
+// `svgText` is `{id: string, code: string}` format.
+import svgText from 'svgFilePath.svg'
+```
+
+
 
 #### Add a loader module in configuration
 
@@ -16,7 +30,7 @@ import shaderText from 'shaderFilePath.glsl'
 	module: {
 		loaders: [
 			{
-				test: /\.(glsl|vert|frag|vs|fs)$/,
+				test: /\.svg$/,
 				loader: '@pucelle/webpack-svg-loader',
 
 				options: {
@@ -36,6 +50,7 @@ import shaderText from 'shaderFilePath.glsl'
 	}
 }
 ```
+
 
 
 ## License

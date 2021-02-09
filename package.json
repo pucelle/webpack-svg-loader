@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"description": "A webpack loader for loading svg files in typescript language",
 	"main": "out/index.js",
-	"typings": "out/type.d.ts",
+	"types": "index.d.ts",
 	"scripts": {
 		"build": "tsc -b",
 		"watch": "tsc -b -w",

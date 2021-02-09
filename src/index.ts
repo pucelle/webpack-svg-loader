@@ -48,13 +48,15 @@ class SVGProcessor {
 		this.options = Object.assign({}, DefaultLoaderOptions, getOptions(loader))
 	}
 
-	process(source: string) {
+	process(source: string): string {
 		if (this.options.compress) {
 			source = this.compress(source)
 		}
+
+		return source
 	}
 
-	getId() {
+	getId(): string {
 		return path.basename(this.filePath, '.svg')
 	}
 
