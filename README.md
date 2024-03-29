@@ -1,4 +1,6 @@
-# Webpack loader for loading svg files in typescript language
+# Webpack SVG Loader
+
+For loading svg files in typescript codes.
 
 
 
