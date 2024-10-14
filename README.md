@@ -62,7 +62,7 @@ import svg from 'svgName.svg'
 
 					// If `true`, will wrap svg codes in a symbol tag.
 					// Be `false` by default.
-					inSymbolType: false,
+					toSymbol: false,
 
 					// The main color will be replaced to `currentColor`,
 					// so that you can re-modify the color from css codes,
