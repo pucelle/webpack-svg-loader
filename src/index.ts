@@ -24,7 +24,7 @@ interface LoaderOptions {
 const DefaultLoaderOptions: Required<LoaderOptions> = {
 	compress: true,
 	toSymbol: false,
-	mainColor: '#000000',
+	mainColor: null,
 }
 
 

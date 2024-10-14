@@ -1,5 +1,5 @@
 /node_modules
 /.vscode
-/.tsbuildinfo
+/*.tsbuildinfo
 /.package-lock.json
 /out
