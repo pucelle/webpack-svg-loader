@@ -7,19 +7,23 @@ import type {loader} from 'webpack'
 type ClassDeclaration = Map<string, Record<string, string>>
 
 interface LoaderOptions {
-	/** Whether compress shader text source. */
-	compress?: boolean
 
-	/** If `true`, will wrap svg codes in a symbol tag. */
-	inSymbolType: boolean
+	/** Whether compress svg codes. */
+	compress: boolean
 
-	/** Which color will be replaced as default color. */
-	mainColor: string
+	/** If `true`, will wrap svg codes in a `<symbol>` tag. */
+	toSymbol: boolean
+
+	/** 
+	 * Which color will be replaced as default color.
+	 * Default value is `#000000`.
+	 */
+	mainColor: string | null
 }
 
 const DefaultLoaderOptions: Required<LoaderOptions> = {
 	compress: true,
-	inSymbolType: false,
+	toSymbol: false,
 	mainColor: '#000000',
 }
 
@@ -28,11 +32,12 @@ export default function(this: loader.LoaderContext, source: string) {
 	this.cacheable()
 
 	let callback = this.async()!
-	let processor = new SVGProcessor(this)
+	let processor = new SVGProcessor(this, source)
 	let id = processor.getId()
-	let code = processor.process(source)
+	let viewBox = processor.getViewBox()
+	let code = processor.process()
 
-	callback(null, `export default ${JSON.stringify({id, code})}`)
+	callback(null, `export default ${JSON.stringify({id, viewBox, code})}`)
 }
 
 
@@ -40,46 +45,58 @@ class SVGProcessor {
 
 	private readonly options: Required<LoaderOptions>
 	private readonly filePath: string
+	private readonly source: string
+	private readonly viewBox: [number, number, number, number]
 
 	constructor(
-		loader: loader.LoaderContext
+		loader: loader.LoaderContext,
+		source: string
 	) {
 		this.filePath = loader.resourcePath
 		this.options = Object.assign({}, DefaultLoaderOptions, getOptions(loader))
+		this.source = source
+
+		this.viewBox = this.checkViewBox()
 	}
 
-	process(source: string): string {
-		if (this.options.compress) {
-			source = this.compress(source)
+	private checkViewBox() {
+		let match = this.source.match(/viewBox="(.+?)"/)
+		if (!match) {
+			throw new Error(`No "viewBox" in "${this.filePath}"`)
 		}
 
-		return source
+		return match[1].split(' ').map(v => Number(v)) as [number, number, number, number]
 	}
 
 	getId(): string {
 		return path.basename(this.filePath, '.svg')
 	}
 
-	private compress(text: string): string {
-		if (/<symbol/.test(text)) {
-			throw new Error(`Symbol in not allowed in "${this.filePath}"`)
+	getViewBox(): [number, number, number, number] {
+		return this.viewBox
+	}
+
+	process(): string {
+		if (this.options.compress) {
+			return this.compress()
 		}
 
-		let match = text.match(/viewBox="(.+?)"/)
-		if (!match) {
-			throw new Error(`No "viewBox" in "${this.filePath}"`)
+		return this.source
+	}
+
+	private compress(): string {
+		if (/<symbol/.test(this.source)) {
+			throw new Error(`Symbol in not allowed in "${this.filePath}"`)
 		}
 
 		let map: ClassDeclaration = new Map()
 
-		if (/<style/.test(text)) {
-			let style = text.match(/<style.*?>([\s\S]*?)<\/style>/)![1]
+		if (/<style/.test(this.source)) {
+			let style = this.source.match(/<style.*?>([\s\S]*?)<\/style>/)![1]
 			this.parseClassesInStyleTag(style, map)
 		}
 	
-		let viewBox = match[1]
-		
-		let svgInner = this.getSVGInner(text, map)
+		let svgInner = this.getSVGInner(map)
 		svgInner = this.processFillStroke(svgInner)
 		svgInner = this.removeEmptyGroups(svgInner)
 		svgInner = this.removeWhiteSpaces(svgInner)
@@ -87,11 +104,11 @@ class SVGProcessor {
 		let id = path.basename(this.filePath, '.svg')
 		let code: string
 
-		if (this.options.inSymbolType) {
-			code = `<symbol id="${id}" viewBox="${viewBox}">${svgInner}\n\t</symbol>`
+		if (this.options.toSymbol) {
+			code = `<symbol id="${id}" viewBox="${this.viewBox.join(' ')}">${svgInner}</symbol>`
 		}
 		else {
-			code = `\n\t\t<svg viewBox="${viewBox}">${svgInner}\n\t\t</svg>\n\t`
+			code = `<svg viewBox="${this.viewBox.join(' ')}">${svgInner}</svg>`
 		}
 
 		return code
@@ -137,8 +154,8 @@ class SVGProcessor {
 		return o
 	}
 
-	private getSVGInner(text: string, map: ClassDeclaration) {
-		let svgInner = text.match(/<svg[\s\S]+?>\s*([\s\S]+?)\s*<\/svg>/)![1]
+	private getSVGInner(map: ClassDeclaration) {
+		let svgInner = this.source.match(/<svg[\s\S]+?>\s*([\s\S]+?)\s*<\/svg>/)![1]
 
 		svgInner = this.cleanSVGInner(svgInner)
 
@@ -200,7 +217,7 @@ class SVGProcessor {
 			}
 		})
 
-		// Remove \n in quots
+		// Remove \n in quotes
 		svgInner = svgInner.replace(/"([\s\S]+?)"/g, (_m0, m1) => {
 			return '"' + m1.replace(/\r?\n\s*/g, '').trim() + '"'
 		})
@@ -215,6 +232,10 @@ class SVGProcessor {
 
 	private processFillStroke(text: string) {
 		let mainColorSource = this.getMainColorRegExpSource()
+
+		let currentColorRE = mainColorSource
+			? new RegExp('\\s*(stroke|fill|stop-color)\\s*:\\s*' + mainColorSource + ';', 'gi')
+			: null
 
 		text = text.replace(/(<(?:path|circle|rect|ellipse|line|polyline|polygon))(.*?\/?>)/g, (tag, left, right) => {
 			if (!/style="(.*?)"/.test(tag)) {
@@ -241,7 +262,9 @@ class SVGProcessor {
 				m0 = m0.replace(/fill\s*:\s*.+?;/, '$&stroke:none;')
 			}
 
-			m0 = m0.replace(new RegExp('\\s*(stroke|fill|stop-color)\\s*:\\s*' + mainColorSource + ';', 'gi'), '$1:currentColor;')
+			if (currentColorRE) {
+				m0 = m0.replace(currentColorRE, '$1:currentColor;')
+			}
 
 			m0 = m0.replace(/\s*style="\s*"/gi, '')
 
@@ -249,7 +272,11 @@ class SVGProcessor {
 		})
 	}
 
-	private getMainColorRegExpSource() {
+	private getMainColorRegExpSource(): string | null {
+		if (!this.options.mainColor) {
+			return null
+		}
+
 		let mainColor = this.options.mainColor.replace('#', '')
 		if (mainColor.length === 3) {
 			mainColor = mainColor + mainColor

@@ -6,53 +6,70 @@
 
 
 
-#### Reference svg file type
+#### Step 1: Reference svg file type
+
+```ts
+import type "@pucelle/webpack-svg-loader"
+```
+
+or
 
 ```ts
 ///<reference types="@pucelle/webpack-svg-loader" />
 ```
 
-
-
-#### Import svg text in you typescript file
+or 
 
 ```ts
-// `svgText` is `{id: string, code: string}` format.
-import svgText from 'svgFilePath.svg'
+declare module '*.svg' {
+    const value: {
+        id: string
+        viewBox: [number, number, number, number]
+        code: string
+    }
+    
+    export default value
+}
+```
+
+
+#### Step2: Import svg file in you typescript codes
+
+```ts
+// `svg` is `{id: string, viewBox: [number, number, number, number], code: string}` format.
+import svg from 'svgName.svg'
 ```
 
 
 
-#### Add a loader module in configuration
+#### Step3: Add a loader rule to your webpack configuration
 
 ```javascript
 {
 	module: {
-		loaders: [
+		rules: [
 			{
 				test: /\.svg$/,
 				loader: '@pucelle/webpack-svg-loader',
 
 				options: {
 
-					// If `true`, will remove whitespaces to compress, be `true` by default.
+					// If `true`, will remove whitespace, and useless tags and attributes to compress.
+					// Be `true` by default.
 					compress: true,
 
-					// If `true`, will wrap svg codes in a symbol tag, be `false` by default.
+					// If `true`, will wrap svg codes in a symbol tag.
+					// Be `false` by default.
 					inSymbolType: false,
 
-					// The main color will be replaced as default color, such that you can re-modify from css codes,
+					// The main color will be replaced to `currentColor`,
+					// so that you can re-modify the color from css codes,
 					// or inherit color from parent elements.
-					mainColor: '#000000',
+					// Be `null` by default.
+					mainColor: null,
 				},
 			}
 		]
 	}
 }
 ```
-
-
-
-## License
-
-MIT
