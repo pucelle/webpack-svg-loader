@@ -64,9 +64,9 @@ import svg from 'svgName.svg'
 					// Be `false` by default.
 					toSymbol: false,
 
-					// The main color will be replaced to `currentColor`,
+					// The stroke or fill color which match main color will be replaced to `currentColor`,
 					// so that you can re-modify the color from css codes,
-					// or inherit color from parent elements.
+					// or inherit color from ancestral elements.
 					// Be `null` by default.
 					mainColor: null,
 				},
