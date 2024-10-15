@@ -11,7 +11,7 @@ For loading svg files to your typescript codes.
 #### Step 1: Reference svg file type
 
 ```ts
-import type "@pucelle/webpack-svg-loader"
+import "@pucelle/webpack-svg-loader"
 ```
 
 or
