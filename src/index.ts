@@ -11,19 +11,22 @@ interface LoaderOptions {
 	/** Whether compress svg codes. */
 	compress: boolean
 
-	/** If `true`, will wrap svg codes in a `<symbol>` tag. */
-	toSymbol: boolean
+	/** 
+	 * If `true`, will remove `svg` tag from `code`, and add `viewBox` item.
+	 * Default value is `false`.
+	 */
+	cut: boolean
 
 	/** 
 	 * Which color will be replaced as default color.
-	 * Default value is `#000000`.
+	 * Default value is `null`.
 	 */
 	mainColor: string | null
 }
 
 const DefaultLoaderOptions: Required<LoaderOptions> = {
 	compress: true,
-	toSymbol: false,
+	cut: false,
 	mainColor: null,
 }
 
@@ -33,11 +36,8 @@ export default function(this: loader.LoaderContext, source: string) {
 
 	let callback = this.async()!
 	let processor = new SVGProcessor(this, source)
-	let id = processor.getId()
-	let viewBox = processor.getViewBox()
-	let code = processor.process()
 
-	callback(null, `export default ${JSON.stringify({id, viewBox, code})}`)
+	callback(null, `export default ${JSON.stringify(processor.output())}`)
 }
 
 
@@ -68,15 +68,23 @@ class SVGProcessor {
 		return match[1].split(' ').map(v => Number(v)) as [number, number, number, number]
 	}
 
-	getId(): string {
+	output(): {id: string, viewBox?: [number, number, number, number], code: string} {
+		let id = this.getId()
+		let code = this.getCode()
+		let o: {id: string, viewBox?: [number, number, number, number], code: string} = {id, code}
+
+		if (this.options.cut) {
+			o.viewBox = this.viewBox
+		}
+
+		return o
+	}
+
+	private getId(): string {
 		return path.basename(this.filePath, '.svg')
 	}
 
-	getViewBox(): [number, number, number, number] {
-		return this.viewBox
-	}
-
-	process(): string {
+	private getCode(): string {
 		if (this.options.compress) {
 			return this.compress()
 		}
@@ -100,18 +108,13 @@ class SVGProcessor {
 		svgInner = this.processFillStroke(svgInner)
 		svgInner = this.removeEmptyGroups(svgInner)
 		svgInner = this.removeWhiteSpaces(svgInner)
-		
-		let id = path.basename(this.filePath, '.svg')
-		let code: string
-
-		if (this.options.toSymbol) {
-			code = `<symbol id="${id}" viewBox="${this.viewBox.join(' ')}">${svgInner}</symbol>`
+	
+		if (this.options.cut) {
+			return svgInner
 		}
 		else {
-			code = `<svg viewBox="${this.viewBox.join(' ')}">${svgInner}</svg>`
+			return `<svg viewBox="${this.viewBox.join(' ')}">${svgInner}</svg>`
 		}
-
-		return code
 	}
 
 	private parseClassesInStyleTag(style: string, map: ClassDeclaration) {
@@ -254,7 +257,7 @@ class SVGProcessor {
 			m0 = m0.replace(/\s*stroke-miterlimit:\s*\d+;/gi, '')
 
 			// Illustrator will not render stroke by default, but browsers will.
-			if (!/fill\s*:/.test(m0) && !/stroke\s*:/.test(m0)) {
+			if (!/fill\s*:/.test(m0) && !/stroke\s*:/.test(m0) && this.options.mainColor) {
 				m0 = m0.replace(/"(.*?)"/, `"$1fill:${this.options.mainColor}; stroke:none;"`)
 			}
 

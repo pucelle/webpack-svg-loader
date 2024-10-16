@@ -20,9 +20,9 @@ or
 declare module '*.svg' {
     const value: {
         id: string
-        viewBox: [number, number, number, number]
         code: string
-    }
+        viewBox?: [number, number, number, number]
+   }
     
     export default value
 }
@@ -54,9 +54,11 @@ import svg from 'svgName.svg'
 					// Be `true` by default.
 					compress: true,
 
-					// If `true`, will wrap svg codes in a symbol tag.
-					// Be `false` by default.
-					toSymbol: false,
+					/** 
+					 * If `true`, will remove `svg` tag from `code`, and add `viewBox` item.
+					 * Default value is `false`.
+					 */
+					cut: false,
 
 					// The stroke or fill color which match main color will be replaced to `currentColor`,
 					// so that you can re-modify the color from css codes,
