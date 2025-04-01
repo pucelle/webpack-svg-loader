@@ -5,7 +5,7 @@
 		"lib": ["esnext", "dom", "dom.iterable"],
 		"rootDir": "src",
 		"outDir": "out",
-		"declaration": true,
+		"declaration": false,
 		"strict": true,
 		"noUnusedLocals": true,
 		"noUnusedParameters": true,

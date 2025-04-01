@@ -1,6 +1,6 @@
 {
 	"name": "@pucelle/webpack-svg-loader",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "A webpack loader for loading svg files to typescript",
 	"main": "out/index.js",
 	"types": "index.d.ts",
