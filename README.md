@@ -32,10 +32,16 @@ declare module '*.svg' {
 #### Step2: Import svg file in you typescript codes
 
 ```ts
-// `svg` is `{id: string, viewBox: [number, number, number, number], code: string}` format.
-import svg from 'svgName.svg'
+// Variable `svg` is in `{id: string, code: '<svg viewBox="...">'}` format.
+import svg from 'svg-file-name.svg'
 ```
 
+If `cut` option is `true`:
+
+```ts
+// Variable `svg` is in `{id: string, viewBox: [number, number, number, number], code: '<line>...'}` format.
+import svg from 'svg-file-name.svg'
+```
 
 
 #### Step3: Add a loader rule to your webpack configuration
@@ -50,21 +56,23 @@ import svg from 'svgName.svg'
 
 				options: {
 
-					// If `true`, will remove whitespace, and useless tags and attributes to compress.
-					// Be `true` by default.
-					compress: true,
+					/** 
+					 * Whether compress svg codes.
+					 * Default value is `true`.
+					 */
+					compress: boolean
 
 					/** 
 					 * If `true`, will remove `svg` tag from `code`, and add `viewBox` item.
 					 * Default value is `false`.
 					 */
-					cut: false,
+					cut: boolean
 
 					// The stroke or fill color which match main color will be replaced to `currentColor`,
 					// so that you can re-modify the color from css codes,
 					// or inherit color from ancestral elements.
 					// Be `null` by default.
-					mainColor: null,
+					mainColor: '#000',
 				},
 			}
 		]

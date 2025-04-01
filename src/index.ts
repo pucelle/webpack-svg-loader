@@ -1,6 +1,5 @@
 import * as path from 'path'
-import {getOptions} from 'loader-utils'
-import type {loader} from 'webpack'
+import type {LoaderContext} from 'webpack'
 
 
 /** `className -> {propertyName: propertyValue}` */
@@ -8,7 +7,10 @@ type ClassDeclaration = Map<string, Record<string, string>>
 
 interface LoaderOptions {
 
-	/** Whether compress svg codes. */
+	/** 
+	 * Whether compress svg codes.
+	 * Default value is `true`.
+	 */
 	compress: boolean
 
 	/** 
@@ -31,7 +33,7 @@ const DefaultLoaderOptions: Required<LoaderOptions> = {
 }
 
 
-export default function(this: loader.LoaderContext, source: string) {
+export default function(this: LoaderContext<LoaderOptions>, source: string) {
 	this.cacheable()
 
 	let callback = this.async()!
@@ -49,11 +51,11 @@ class SVGProcessor {
 	private readonly viewBox: [number, number, number, number]
 
 	constructor(
-		loader: loader.LoaderContext,
+		context: LoaderContext<LoaderOptions>,
 		source: string
 	) {
-		this.filePath = loader.resourcePath
-		this.options = Object.assign({}, DefaultLoaderOptions, getOptions(loader))
+		this.filePath = context.resourcePath
+		this.options = Object.assign({}, DefaultLoaderOptions, context.getOptions())
 		this.source = source
 
 		this.viewBox = this.checkViewBox()
