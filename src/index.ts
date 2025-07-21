@@ -1,4 +1,3 @@
-import * as path from 'path'
 import type {LoaderContext} from 'webpack'
 
 
@@ -14,12 +13,6 @@ interface LoaderOptions {
 	compress: boolean
 
 	/** 
-	 * If `true`, will remove `svg` tag from `code`, and add `viewBox` item.
-	 * Default value is `false`.
-	 */
-	cut: boolean
-
-	/** 
 	 * Which color will be replaced as default color.
 	 * Default value is `null`.
 	 */
@@ -28,7 +21,6 @@ interface LoaderOptions {
 
 const DefaultLoaderOptions: Required<LoaderOptions> = {
 	compress: true,
-	cut: false,
 	mainColor: null,
 }
 
@@ -62,28 +54,17 @@ class SVGProcessor {
 	}
 
 	private checkViewBox() {
-		let match = this.source.match(/viewBox="(.+?)"/)
+		let match = this.source.match(/viewBox=["'](.+?)["']/)
 		if (!match) {
 			throw new Error(`No "viewBox" in "${this.filePath}"`)
 		}
 
-		return match[1].split(' ').map(v => Number(v)) as [number, number, number, number]
+		return match[1].split(/[\s+]/).map(v => Number(v)) as [number, number, number, number]
 	}
 
-	output(): {id: string, viewBox?: [number, number, number, number], code: string} {
-		let id = this.getId()
+	output(): string {
 		let code = this.getCode()
-		let o: {id: string, viewBox?: [number, number, number, number], code: string} = {id, code}
-
-		if (this.options.cut) {
-			o.viewBox = this.viewBox
-		}
-
-		return o
-	}
-
-	private getId(): string {
-		return path.basename(this.filePath, '.svg')
+		return code
 	}
 
 	private getCode(): string {
@@ -111,12 +92,7 @@ class SVGProcessor {
 		svgInner = this.removeEmptyGroups(svgInner)
 		svgInner = this.removeWhiteSpaces(svgInner)
 	
-		if (this.options.cut) {
-			return svgInner
-		}
-		else {
-			return `<svg viewBox="${this.viewBox.join(' ')}">${svgInner}</svg>`
-		}
+		return `<svg viewBox="${this.viewBox.join(' ')}">${svgInner}</svg>`
 	}
 
 	private parseClassesInStyleTag(style: string, map: ClassDeclaration) {

@@ -18,13 +18,7 @@ or
 
 ```ts
 declare module '*.svg' {
-    const value: {
-        id: string
-        code: string
-        viewBox?: [number, number, number, number]
-   }
-    
-    export default value
+    export default string
 }
 ```
 
@@ -32,14 +26,7 @@ declare module '*.svg' {
 #### Step2: Import svg file in you typescript codes
 
 ```ts
-// Variable `svg` is in `{id: string, code: '<svg viewBox="...">'}` format.
-import svg from 'svg-file-name.svg'
-```
-
-If `cut` option is `true`:
-
-```ts
-// Variable `svg` is in `{id: string, viewBox: [number, number, number, number], code: '<line>...'}` format.
+// Variable `svg` is svg code string.
 import svg from 'svg-file-name.svg'
 ```
 
@@ -61,12 +48,6 @@ import svg from 'svg-file-name.svg'
 					 * Default value is `true`.
 					 */
 					compress: boolean
-
-					/** 
-					 * If `true`, will remove `svg` tag from `code`, and add `viewBox` item.
-					 * Default value is `false`.
-					 */
-					cut: boolean
 
 					// The stroke or fill color which match main color will be replaced to `currentColor`,
 					// so that you can re-modify the color from css codes,
