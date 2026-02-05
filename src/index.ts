@@ -91,7 +91,7 @@ class SVGProcessor {
 		svgInner = this.processFillStroke(svgInner)
 		svgInner = this.removeEmptyGroups(svgInner)
 		svgInner = this.removeWhiteSpaces(svgInner)
-	
+
 		return `<svg viewBox="${this.viewBox.join(' ')}">${svgInner}</svg>`
 	}
 
@@ -214,8 +214,12 @@ class SVGProcessor {
 	private processFillStroke(text: string) {
 		let mainColorSource = this.getMainColorRegExpSource()
 
-		let currentColorRE = mainColorSource
+		let styleCurrentColorRE = mainColorSource
 			? new RegExp('\\s*(stroke|fill|stop-color)\\s*:\\s*' + mainColorSource + ';', 'gi')
+			: null
+
+		let strokeFillCurrentColorRE = mainColorSource
+			? new RegExp(mainColorSource, 'gi')
 			: null
 
 		// Add a style attribute if have not.
@@ -241,8 +245,8 @@ class SVGProcessor {
 				m0 = m0.replace(/fill\s*:\s*.+?;/, '$&stroke:none;')
 			}
 
-			if (currentColorRE) {
-				m0 = m0.replace(currentColorRE, '$1:currentColor;')
+			if (styleCurrentColorRE) {
+				m0 = m0.replace(styleCurrentColorRE, '$1:currentColor;')
 			}
 
 			m0 = m0.replace(/\s*style="\s*"/gi, '')
@@ -252,8 +256,8 @@ class SVGProcessor {
 		
 		// Replace stroke and fill attributes to style.
 		.replace(/(stroke|fill)\s*=\s*"(#\w+)"/g, (m0: string, m1: string, m2: string) => {
-			if (currentColorRE) {
-				return `${m1}="${m2.replace(currentColorRE, 'currentColor')}"`
+			if (strokeFillCurrentColorRE) {
+				return `${m1}="${m2.replace(strokeFillCurrentColorRE, 'currentColor')}"`
 			}
 			else {
 				return m0
