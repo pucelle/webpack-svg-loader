@@ -1,6 +1,6 @@
 {
 	"name": "@pucelle/webpack-svg-loader",
-	"version": "1.0.5",
+	"version": "1.0.6",
 	"description": "A webpack loader for loading svg files to typescript",
 	"main": "out/index.js",
 	"types": "index.d.ts",
@@ -26,8 +26,8 @@
 		"url": "https://github.com/pucelle/webpack-svg-loader/issues"
 	},
 	"devDependencies": {
-		"@types/node": "^24.10.1",
-		"webpack": "^5.98.0",
-		"typescript": "^5.8.2"
+		"@types/node": "^22.19.3",
+		"webpack": "^5.104.0",
+		"typescript": "^5.9.3"
 	}
 }
