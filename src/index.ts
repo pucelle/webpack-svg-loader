@@ -228,6 +228,10 @@ class SVGProcessor {
 				tag = left + ' style=""' + right
 			}
 
+			if (/fill\s*=\s*"(#\w+)"/.test(tag) && !/stroke\s*=\s*"(#\w+)"/.test(tag)) {
+				tag = tag.replace(/fill\s*=\s*"(#\w+)"/, '$& stroke="none"')
+			}
+
 			return tag
 		})
 
